@@ -31,20 +31,15 @@ CodeColab is a real-time code collaboration web application that allows multiple
 
 - Join Room Page
 
-<img width="1280" alt="Screenshot 2025-05-25 at 1 33 33 PM" src="https://github.com/user-attachments/assets/c01b4800-9b42-4c32-928e-20684e611209" />
-
+<img width="1279" alt="Join Room page" src="https://github.com/user-attachments/assets/4227a719-f070-447a-bdc6-ef5e4f6b7d72" />
 
 - Editor Page
-  
-<img width="1280" alt="Screenshot 2025-05-25 at 1 35 17 PM" src="https://github.com/user-attachments/assets/ad96357b-1dcf-4f31-8085-a758c3c6016a" />
 
-
+<img width="1278" alt="Editor Page" src="https://github.com/user-attachments/assets/4137ad6a-9463-4ced-9bab-8ae4b6cae6c1" />
 
 - Multiple People Collaborating on same code
 
-https://github.com/user-attachments/assets/1b87bc6e-07ba-4a28-b21c-91ee4b79b56a
-
-
+https://github.com/user-attachments/assets/d47fec2c-8acf-44ad-b05f-3e696033717f
 
 ## Run Locally
 
