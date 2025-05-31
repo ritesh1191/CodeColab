@@ -28,6 +28,9 @@ const io = new Server(server, {
 });
 const userSocketMap = {};
 const roomCodeMap = {};  // Track code state for each room
+const roomInputMap = {}; // Track input state for each room
+const roomLanguageMap = {}; // Track language state for each room
+const roomOutputMap = {}; // Track output state for each room
 
 const getAllConnectedClients = (roomId) => {
   try {
@@ -61,11 +64,18 @@ io.on("connection", (socket) => {
       
       console.log(`${username} joined room ${roomId}`);
 
-      // Get the first client in the room (excluding the new user)
-      const existingClients = clients.filter(client => client.socketId !== socket.id);
-      if (existingClients.length > 0) {
-        // Request code from the first existing client
-        io.to(existingClients[0].socketId).emit('get-code', { socketId: socket.id });
+      // Send current room state to the new user
+      if (roomCodeMap[roomId]) {
+        socket.emit('code-change', { code: roomCodeMap[roomId] });
+      }
+      if (roomInputMap[roomId]) {
+        socket.emit('input-change', { input: roomInputMap[roomId] });
+      }
+      if (roomLanguageMap[roomId]) {
+        socket.emit('language-change', { language: roomLanguageMap[roomId] });
+      }
+      if (roomOutputMap[roomId]) {
+        socket.emit('code-execution', roomOutputMap[roomId]);
       }
 
       // notify all clients in the room
@@ -87,11 +97,37 @@ io.on("connection", (socket) => {
       if (!roomId) {
         return;
       }
-      // Update the code state for the room
       roomCodeMap[roomId] = code;
-      socket.in(roomId).emit("code-change", { code });
+      const username = userSocketMap[socket.id];
+      socket.in(roomId).emit("code-change", { code, username });
     } catch (error) {
       console.error('Error in code-change event:', error);
+    }
+  });
+
+  socket.on("input-change", ({ roomId, input }) => {
+    try {
+      if (!roomId) {
+        return;
+      }
+      roomInputMap[roomId] = input;
+      const username = userSocketMap[socket.id];
+      socket.in(roomId).emit("input-change", { input, username });
+    } catch (error) {
+      console.error('Error in input-change event:', error);
+    }
+  });
+
+  socket.on("language-change", ({ roomId, language }) => {
+    try {
+      if (!roomId) {
+        return;
+      }
+      roomLanguageMap[roomId] = language;
+      const username = userSocketMap[socket.id];
+      socket.in(roomId).emit("language-change", { language, username });
+    } catch (error) {
+      console.error('Error in language-change event:', error);
     }
   });
 
@@ -100,7 +136,6 @@ io.on("connection", (socket) => {
       if (!roomId) {
         return;
       }
-      // Broadcast cursor position to all clients in the room except sender
       socket.in(roomId).emit("cursor-update", {
         socketId: socket.id,
         username: userSocketMap[socket.id],
@@ -119,6 +154,33 @@ io.on("connection", (socket) => {
       io.to(socketId).emit("code-change", { code });
     } catch (error) {
       console.error('Error in sync-code event:', error);
+    }
+  });
+
+  socket.on("code-execution", ({ roomId, output, error }) => {
+    try {
+      if (!roomId) {
+        return;
+      }
+      roomOutputMap[roomId] = { output, error };
+      const username = userSocketMap[socket.id];
+      // Emit to all clients in the room except the sender
+      socket.in(roomId).emit("code-execution", { output, error, username });
+    } catch (error) {
+      console.error('Error in code-execution event:', error);
+    }
+  });
+
+  socket.on("code-running", ({ roomId }) => {
+    try {
+      if (!roomId) {
+        return;
+      }
+      const username = userSocketMap[socket.id];
+      // Emit to all clients in the room except the sender
+      socket.in(roomId).emit("code-running", { username });
+    } catch (error) {
+      console.error('Error in code-running event:', error);
     }
   });
 

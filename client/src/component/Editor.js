@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "codemirror/mode/javascript/javascript";
+import "codemirror/mode/clike/clike";  // For Java and C++
+import "codemirror/mode/python/python";
 import "codemirror/theme/material-palenight.css";
 import "codemirror/addon/edit/closetag";
 import "codemirror/addon/edit/closebrackets";
@@ -14,17 +16,23 @@ import "codemirror/addon/selection/active-line";
 import { motion, AnimatePresence } from "framer-motion";
 import CursorLabel from "./CursorLabel";
 
-function Editor({ socketRef, roomId, onCodeChange }) {
+function Editor({ socketRef, roomId, onCodeChange, language }) {
   const editorRef = useRef(null);
   const [cursors, setCursors] = useState({});
   const typingTimeoutRef = useRef({});
 
   useEffect(() => {
     async function init() {
+      const modeMap = {
+        'cpp': { name: 'text/x-c++src' },
+        'java': { name: 'text/x-java' },
+        'python': { name: 'python' }
+      };
+
       editorRef.current = CodeMirror.fromTextArea(
         document.getElementById("realtimeEditor"),
         {
-          mode: { name: "javascript", json: true },
+          mode: modeMap[language] || modeMap['python'],
           theme: "material-palenight",
           autoCloseTags: true,
           autoCloseBrackets: true,
@@ -53,8 +61,8 @@ function Editor({ socketRef, roomId, onCodeChange }) {
       const editor = editorRef.current;
       editor.getWrapperElement().style.fontSize = "14px";
       editor.getWrapperElement().style.fontFamily = "'Fira Code', monospace";
-      editor.getWrapperElement().style.height = "calc(100vh - 2rem)";
-      editor.getWrapperElement().style.borderRadius = "var(--radius-lg)";
+      editor.getWrapperElement().style.height = "100%";
+      editor.getWrapperElement().style.borderRadius = "8px";
       editor.refresh();
 
       editor.on("change", (instance, changes) => {

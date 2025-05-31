@@ -5,6 +5,7 @@ import Editor from './Editor';
 import { initSocket } from '../Socket';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { executeCode } from '../services/codeExecutionService';
 
 const EditorPage = () => {
     const socketRef = useRef(null);
@@ -14,9 +15,16 @@ const EditorPage = () => {
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
     const [isConnecting, setIsConnecting] = useState(true);
+    const [language, setLanguage] = useState('python');
+    const [input, setInput] = useState('');
+    const [output, setOutput] = useState('');
+    const [isRunning, setIsRunning] = useState(false);
+    const [error, setError] = useState('');
+    const [activeUsers, setActiveUsers] = useState({});
 
     useEffect(() => {
         let mounted = true;
+        let activityTimeouts = {};
 
         const init = async () => {
             if (!location.state?.username || !roomId) {
@@ -50,6 +58,49 @@ const EditorPage = () => {
                 socket.emit('join', {
                     roomId,
                     username: location.state?.username,
+                });
+
+                // Listen for code changes from other users
+                socket.on('code-change', ({ code, username }) => {
+                    if (code !== null) {
+                        codeRef.current = code;
+                        if (username) {
+                            showUserActivity(username, 'code');
+                        }
+                    }
+                });
+
+                // Listen for input changes from other users
+                socket.on('input-change', ({ input: newInput, username }) => {
+                    setInput(newInput);
+                    if (username) {
+                        showUserActivity(username, 'input');
+                    }
+                });
+
+                // Listen for language changes from other users
+                socket.on('language-change', ({ language: newLanguage, username }) => {
+                    setLanguage(newLanguage);
+                    if (username) {
+                        showUserActivity(username, 'language');
+                    }
+                });
+
+                // Listen for code execution events
+                socket.on('code-execution', ({ output, error, username }) => {
+                    if (error) {
+                        setError(error);
+                    } else {
+                        setError('');
+                    }
+                    setOutput(output || '');
+                });
+
+                // Listen for code running notifications
+                socket.on('code-running', ({ username }) => {
+                    if (username !== location.state?.username) {
+                        showUserActivity(username, 'running');
+                    }
                 });
 
                 socket.on('joined', ({ clients, username, socketId }) => {
@@ -124,10 +175,37 @@ const EditorPage = () => {
             }
         }
 
+        const showUserActivity = (username, activityType) => {
+            if (username === location.state?.username) return; // Don't show for current user
+            
+            setActiveUsers(prev => ({
+                ...prev,
+                [username]: {
+                    type: activityType,
+                    timestamp: Date.now()
+                }
+            }));
+
+            // Clear the activity after 2 seconds
+            if (activityTimeouts[username]) {
+                clearTimeout(activityTimeouts[username]);
+            }
+
+            activityTimeouts[username] = setTimeout(() => {
+                setActiveUsers(prev => {
+                    const newState = { ...prev };
+                    delete newState[username];
+                    return newState;
+                });
+            }, 2000);
+        };
+
         init();
 
         return () => {
             mounted = false;
+            // Clear all timeouts
+            Object.values(activityTimeouts).forEach(timeout => clearTimeout(timeout));
             if (socketRef.current) {
                 console.log('Cleaning up socket connection...');
                 socketRef.current.disconnect();
@@ -135,6 +213,11 @@ const EditorPage = () => {
                 socketRef.current.off('connect_failed');
                 socketRef.current.off('joined');
                 socketRef.current.off('disconnected');
+                socketRef.current.off('input-change');
+                socketRef.current.off('language-change');
+                socketRef.current.off('code-change');
+                socketRef.current.off('code-execution');
+                socketRef.current.off('code-running');
                 socketRef.current = null;
             }
         };
@@ -167,6 +250,129 @@ const EditorPage = () => {
 
     const leaveRoom = () => {
         reactNavigator('/');
+    };
+
+    const handleLanguageChange = (e) => {
+        const newLanguage = e.target.value;
+        setLanguage(newLanguage);
+        
+        // Emit language change to other users
+        socketRef.current.emit('language-change', {
+            roomId,
+            language: newLanguage,
+        });
+
+        toast.success(`Switched to ${newLanguage.toUpperCase()}`, {
+            style: {
+                background: 'var(--success-color)',
+                color: '#fff',
+                borderRadius: 'var(--radius-lg)',
+            },
+            icon: '🔄',
+            duration: 2000,
+        });
+    };
+
+    const handleInputChange = (e) => {
+        const newInput = e.target.value;
+        setInput(newInput);
+        
+        // Emit input change to other users
+        socketRef.current.emit('input-change', {
+            roomId,
+            input: newInput,
+        });
+    };
+
+    const handleRun = async () => {
+        if (!codeRef.current) {
+            toast.error('Please write some code first!', {
+                style: {
+                    background: 'var(--danger-color)',
+                    color: '#fff',
+                    borderRadius: 'var(--radius-lg)',
+                },
+                icon: '⚠️',
+                duration: 3000,
+            });
+            return;
+        }
+
+        setIsRunning(true);
+        setError('');
+        setOutput('');
+
+        // Emit code running event
+        socketRef.current.emit('code-running', {
+            roomId,
+        });
+
+        try {
+            const result = await executeCode(codeRef.current, language, input);
+
+            if (result.success) {
+                setOutput(result.output);
+                // Emit the execution result to other users
+                socketRef.current.emit('code-execution', {
+                    roomId,
+                    output: result.output,
+                    error: null
+                });
+            } else {
+                setError(result.error);
+                setOutput(result.output);
+                // Emit the execution error to other users
+                socketRef.current.emit('code-execution', {
+                    roomId,
+                    output: result.output,
+                    error: result.error
+                });
+            }
+        } catch (err) {
+            setError(err.message);
+            // Emit the execution error to other users
+            socketRef.current.emit('code-execution', {
+                roomId,
+                output: '',
+                error: err.message
+            });
+        } finally {
+            setIsRunning(false);
+        }
+    };
+
+    const renderActiveUsers = () => {
+        return Object.entries(activeUsers).map(([username, activity]) => {
+            const activityText = {
+                code: 'is editing code',
+                input: 'is updating input',
+                language: 'is changing language',
+                running: 'is running code'
+            }[activity.type];
+
+            return (
+                <motion.div
+                    key={`${username}-${activity.timestamp}`}
+                    className="active-user-indicator"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    style={{
+                        position: 'fixed',
+                        top: '20px',
+                        right: '20px',
+                        background: 'var(--success-color)',
+                        color: 'white',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        zIndex: 1000,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                    }}
+                >
+                    <span style={{ fontWeight: 'bold' }}>{username}</span> {activityText}
+                </motion.div>
+            );
+        });
     };
 
     if (!location.state) {
@@ -218,15 +424,18 @@ const EditorPage = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
         >
+            <AnimatePresence>
+                {renderActiveUsers()}
+            </AnimatePresence>
             <div className="container-fluid p-0">
                 <div className="row g-0">
                     <motion.div
-                        className="col-md-3 col-lg-2 bg-gradient p-4"
+                        className="col-md-3 col-lg-2 sidebar"
                         initial={{ x: -50, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
                     >
-                        <div className="d-flex flex-column h-100">
+                        <div className="p-4">
                             <div className="mb-4">
                                 <h3 className="text-light mb-4">Connected Users</h3>
                                 <div className="connected-users">
@@ -249,7 +458,28 @@ const EditorPage = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-auto">
+                            <div className="mt-4">
+                                <div className="mb-3">
+                                    <label className="text-light mb-2">Language</label>
+                                    <select 
+                                        className="form-select mb-3"
+                                        value={language}
+                                        onChange={handleLanguageChange}
+                                    >
+                                        <option value="python">Python</option>
+                                        <option value="cpp">C++</option>
+                                        <option value="java">Java</option>
+                                    </select>
+                                    <motion.button
+                                        className="btn btn-success w-100 mb-3"
+                                        onClick={handleRun}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        disabled={isRunning}
+                                    >
+                                        {isRunning ? 'Running...' : 'Run Code'}
+                                    </motion.button>
+                                </div>
                                 <motion.button
                                     className="btn btn-light w-100 mb-3"
                                     onClick={copyRoomId}
@@ -273,18 +503,57 @@ const EditorPage = () => {
                     </motion.div>
 
                     <motion.div
-                        className="col-md-9 col-lg-10"
+                        className="col-md-9 col-lg-10 editor-section"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 }}
                     >
-                        <Editor
-                            socketRef={socketRef}
-                            roomId={roomId}
-                            onCodeChange={(code) => {
-                                codeRef.current = code;
-                            }}
-                        />
+                        <div className="flex-grow-1">
+                            <Editor
+                                socketRef={socketRef}
+                                roomId={roomId}
+                                language={language}
+                                onCodeChange={(code) => {
+                                    codeRef.current = code;
+                                }}
+                            />
+                        </div>
+                        <motion.div 
+                            className="io-container"
+                            initial={{ y: 50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                        >
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>Input</label>
+                                        <textarea
+                                            className="form-control"
+                                            value={input}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter program input here..."
+                                            style={{ resize: 'none' }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="col-md-6">
+                                    <div className="form-group">
+                                        <label>Output</label>
+                                        <textarea
+                                            className={`form-control ${error ? 'is-invalid' : ''}`}
+                                            value={error || output}
+                                            readOnly
+                                            placeholder="Program output will appear here..."
+                                            style={{ 
+                                                resize: 'none',
+                                                color: error ? 'var(--danger-color)' : 'inherit'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 </div>
             </div>

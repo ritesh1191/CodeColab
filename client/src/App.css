@@ -112,9 +112,8 @@ body {
 /* App-specific styles */
 .app-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  background: #1a1a1a;
   position: relative;
-  overflow: hidden;
 }
 
 .app-wrapper::before {
@@ -313,4 +312,179 @@ body {
   .app-header h1 {
     font-size: 1.25rem;
   }
+}
+
+.editor-container {
+    height: 100% !important;
+    overflow: hidden;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    margin: 1rem;
+}
+
+.editor-section {
+    height: 100vh;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar {
+    height: 100vh;
+    overflow-y: auto;
+    background: #2d2d2d;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 2;
+}
+
+.connected-users {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 1rem;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+
+.CodeMirror {
+    height: calc(100vh - 250px) !important;
+    font-size: 14px;
+    border-radius: 8px;
+}
+
+.bg-gradient {
+    background: #2d2d2d !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-control.bg-dark {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #2d2d2d !important;
+    color: #fff;
+}
+
+.form-control.bg-dark:focus {
+    background-color: #2d2d2d;
+    border-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+.form-select {
+    background-color: #2d2d2d !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 100;
+}
+
+.form-select:focus {
+    background-color: #2d2d2d !important;
+    border-color: var(--primary-color);
+    color: white !important;
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+.form-select option {
+    background-color: #2d2d2d;
+    color: white;
+    padding: 8px;
+}
+
+.io-container {
+    background-color: #2d2d2d;
+    border-radius: 8px;
+    margin: 0 1rem;
+    padding: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.io-container label {
+    color: #fff;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.io-container textarea {
+    background-color: #1e1e1e !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #fff !important;
+    font-family: 'Fira Code', monospace;
+    width: 100%;
+    padding: 8px;
+    min-height: 120px;
+}
+
+.io-container textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* Style scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.btn-success:disabled {
+    background-color: #28a745;
+    border-color: #28a745;
+    opacity: 0.65;
+}
+
+.text-light {
+    color: #fff !important;
+}
+
+/* Make components scrollable on smaller screens */
+@media (max-width: 768px) {
+    .sidebar {
+        height: auto;
+        min-height: 300px;
+    }
+    
+    .editor-section {
+        height: auto;
+        min-height: calc(100vh - 300px);
+    }
+    
+    .CodeMirror {
+        height: 400px !important;
+    }
+    
+    .io-container {
+        max-height: none;
+    }
 }
