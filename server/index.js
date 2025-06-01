@@ -92,6 +92,16 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("get-code", ({ roomId }) => {
+    try {
+      if (roomCodeMap[roomId]) {
+        socket.emit('code-change', { code: roomCodeMap[roomId] });
+      }
+    } catch (error) {
+      console.error('Error in get-code event:', error);
+    }
+  });
+
   socket.on("code-change", ({ roomId, code }) => {
     try {
       if (!roomId) {

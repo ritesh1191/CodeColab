@@ -72,7 +72,9 @@ const EditorPage = () => {
 
                 // Listen for input changes from other users
                 socket.on('input-change', ({ input: newInput, username }) => {
-                    setInput(newInput);
+                    if (newInput !== null && newInput !== input) {
+                        setInput(newInput);
+                    }
                     if (username) {
                         showUserActivity(username, 'input');
                     }
@@ -99,6 +101,16 @@ const EditorPage = () => {
                 // Listen for code running notifications
                 socket.on('code-running', ({ username }) => {
                     if (username !== location.state?.username) {
+                        // Show toast for other users
+                        toast.loading(`${username} is running code...`, {
+                            style: {
+                                background: 'var(--primary-color)',
+                                color: '#fff',
+                                borderRadius: 'var(--radius-lg)',
+                            },
+                            icon: '⚙️',
+                            duration: 2000,
+                        });
                         showUserActivity(username, 'running');
                     }
                 });
@@ -302,9 +314,21 @@ const EditorPage = () => {
         setError('');
         setOutput('');
 
-        // Emit code running event
+        // Show toast for current user
+        toast.loading(`Running code...`, {
+            style: {
+                background: 'var(--primary-color)',
+                color: '#fff',
+                borderRadius: 'var(--radius-lg)',
+            },
+            icon: '⚙️',
+            duration: 2000,
+        });
+
+        // Emit code running event with username
         socketRef.current.emit('code-running', {
             roomId,
+            username: location.state?.username
         });
 
         try {
@@ -318,6 +342,16 @@ const EditorPage = () => {
                     output: result.output,
                     error: null
                 });
+
+                toast.success(`Code executed successfully!`, {
+                    style: {
+                        background: 'var(--success-color)',
+                        color: '#fff',
+                        borderRadius: 'var(--radius-lg)',
+                    },
+                    icon: '✅',
+                    duration: 3000,
+                });
             } else {
                 setError(result.error);
                 setOutput(result.output);
@@ -327,6 +361,16 @@ const EditorPage = () => {
                     output: result.output,
                     error: result.error
                 });
+
+                toast.error(`Code execution failed!`, {
+                    style: {
+                        background: 'var(--danger-color)',
+                        color: '#fff',
+                        borderRadius: 'var(--radius-lg)',
+                    },
+                    icon: '❌',
+                    duration: 3000,
+                });
             }
         } catch (err) {
             setError(err.message);
@@ -335,6 +379,16 @@ const EditorPage = () => {
                 roomId,
                 output: '',
                 error: err.message
+            });
+
+            toast.error(`Error: ${err.message}`, {
+                style: {
+                    background: 'var(--danger-color)',
+                    color: '#fff',
+                    borderRadius: 'var(--radius-lg)',
+                },
+                icon: '❌',
+                duration: 3000,
             });
         } finally {
             setIsRunning(false);

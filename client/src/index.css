@@ -1,21 +1,27 @@
 :root {
-  /* Modern Color Scheme */
-  --primary-color: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --secondary-color: #0f172a;
-  --accent-color: #f43f5e;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --background-color: #ffffff;
-  --background-dark: #0f172a;
-  --surface-color: #f8fafc;
-  --surface-dark: #1e293b;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-light: #f8fafc;
-  --text-dark: #0f172a;
+  /* Modern Color Scheme - Professional Dark Theme */
+  --primary-color: #2188ff;      /* GitHub Blue */
+  --primary-light: #79b8ff;      /* Light Blue */
+  --primary-dark: #0366d6;       /* Dark Blue */
+  --secondary-color: #24292e;    /* GitHub Dark */
+  --accent-color: #28a745;       /* GitHub Green */
+  --success-color: #28a745;      /* Success Green */
+  --warning-color: #f1c40f;      /* Warning Yellow */
+  --danger-color: #d73a49;       /* Error Red */
+  --background-color: #1e1e1e;   /* VS Code Dark */
+  --background-dark: #1a1a1a;    /* Darker Background */
+  --surface-color: #252526;      /* VS Code Surface */
+  --surface-dark: #2d2d2d;       /* Darker Surface */
+  --text-primary: #ffffff;       /* Pure White */
+  --text-secondary: #8b949e;     /* GitHub Muted */
+  --text-light: #e1e4e8;        /* Light Gray */
+  --text-dark: #24292e;         /* Almost Black */
+
+  /* Modern Gradients */
+  --gradient-primary: linear-gradient(135deg, #2188ff, #0366d6);
+  --gradient-accent: linear-gradient(135deg, #28a745, #22863a);
+  --gradient-success: linear-gradient(135deg, #28a745, #22863a);
+  --gradient-surface: linear-gradient(135deg, #252526, #1e1e1e);
 
   /* Modern Spacing System */
   --spacing-xs: 0.25rem;
@@ -82,23 +88,25 @@ h1, h2, h3, h4, h5, h6 {
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-lg);
   border: none;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
   position: relative;
   overflow: hidden;
-  background-color: var(--primary-color);
+  background: var(--primary-color);
   color: white;
+  letter-spacing: 0.3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  background-color: var(--primary-dark);
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn:active {
@@ -124,21 +132,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Modern Input Styles */
-.input {
+.input, .form-control, .form-select {
   padding: var(--spacing-md) var(--spacing-lg);
-  border: 2px solid #e2e8f0;
+  border: 1px solid #404040;
   border-radius: var(--radius-lg);
   font-size: 1rem;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
   width: 100%;
-  background-color: var(--surface-color);
+  background: var(--surface-dark);
   color: var(--text-primary);
 }
 
-.input:focus {
-  outline: none;
+.input:focus, .form-control:focus, .form-select:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 2px rgba(33, 136, 255, 0.2);
+  background: var(--surface-dark);
 }
 
 .input::placeholder {
@@ -150,14 +158,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--surface-color);
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all var(--transition-normal);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid #404040;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Modern Scrollbar */
@@ -167,23 +175,22 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--surface-color);
-  border-radius: var(--radius-full);
+  background: var(--background-color);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-light);
+  background: #404040;
+  border: 2px solid var(--background-color);
   border-radius: var(--radius-full);
-  border: 2px solid var(--surface-color);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
+  background: #4f4f4f;
 }
 
 /* Modern Utility Classes */
 .text-gradient {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  background: linear-gradient(135deg, #2188ff, #79b8ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -194,10 +201,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .glass-effect {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(37, 37, 38, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+              0 2px 4px -1px rgba(0, 0, 0, 0.1);
 }
 
 .shadow-hover {
@@ -213,9 +222,9 @@ h1, h2, h3, h4, h5, h6 {
 .loading-spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: var(--primary-color);
   animation: spin 0.8s linear infinite;
 }
 
@@ -249,4 +258,91 @@ h1, h2, h3, h4, h5, h6 {
   .container {
     padding: 0 var(--spacing-sm);
   }
+}
+
+/* Add styles for the editor section */
+.editor-section {
+  background: var(--background-color);
+  border-radius: var(--radius-lg);
+  border: none;
+}
+
+/* Style the sidebar */
+.sidebar {
+  background: var(--surface-color);
+  border-right: 1px solid #404040;
+}
+
+/* Style form elements */
+.form-select {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+}
+
+.form-select:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
+
+.form-control {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+}
+
+.form-control:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+}
+
+/* Add subtle transitions */
+.form-select,
+.form-control,
+.btn,
+.card,
+.glass-effect {
+  transition: all var(--transition-normal);
+}
+
+/* Style the connected users section */
+.connected-users {
+  background: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  border: 1px solid #404040;
+}
+
+/* Add a subtle border to the editor */
+.editor-container {
+  background: var(--background-color);
+  border: 1px solid #404040;
+  border-radius: var(--radius-lg);
+}
+
+/* Style the IO container */
+.io-container {
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+  border: 1px solid #404040;
+}
+
+/* Add modern focus styles */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Add subtle border to active elements */
+.active {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 1px var(--primary-color);
 }

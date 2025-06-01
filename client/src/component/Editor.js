@@ -9,10 +9,17 @@ import "codemirror/lib/codemirror.css";
 import CodeMirror from "codemirror";
 import "codemirror/addon/hint/show-hint";
 import "codemirror/addon/hint/javascript-hint";
+import "codemirror/addon/hint/anyword-hint"; // For generic word-based completion
 import "codemirror/addon/hint/show-hint.css";
 import "codemirror/addon/scroll/simplescrollbars";
 import "codemirror/addon/scroll/simplescrollbars.css";
 import "codemirror/addon/selection/active-line";
+import "codemirror/addon/comment/comment";
+import "codemirror/addon/fold/foldcode";
+import "codemirror/addon/fold/foldgutter";
+import "codemirror/addon/fold/brace-fold";
+import "codemirror/addon/fold/indent-fold";
+import "codemirror/addon/fold/foldgutter.css";
 import { motion, AnimatePresence } from "framer-motion";
 import CursorLabel from "./CursorLabel";
 
@@ -23,10 +30,59 @@ function Editor({ socketRef, roomId, onCodeChange, language }) {
 
   useEffect(() => {
     async function init() {
+      // Clean up previous editor instance if it exists
+      if (editorRef.current) {
+        // Save the current code before cleanup
+        const currentCode = editorRef.current.getValue();
+        
+        // Remove all event listeners
+        editorRef.current.off("change");
+        editorRef.current.off("inputRead");
+        
+        // Get the wrapper element and remove it
+        const wrapper = editorRef.current.getWrapperElement();
+        wrapper.remove();
+        
+        // Clear the textarea
+        document.getElementById("realtimeEditor").value = "";
+      }
+
       const modeMap = {
-        'cpp': { name: 'text/x-c++src' },
-        'java': { name: 'text/x-java' },
-        'python': { name: 'python' }
+        'cpp': { 
+          name: 'text/x-c++src',
+          keywords: [
+            'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+            'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if',
+            'int', 'long', 'register', 'return', 'short', 'signed', 'sizeof', 'static',
+            'struct', 'switch', 'typedef', 'union', 'unsigned', 'void', 'volatile',
+            'while', 'class', 'namespace', 'try', 'catch', 'throw', 'template',
+            'public', 'private', 'protected', 'virtual', 'friend', 'operator', 'new',
+            'delete', 'this', 'using'
+          ]
+        },
+        'java': { 
+          name: 'text/x-java',
+          keywords: [
+            'abstract', 'assert', 'boolean', 'break', 'byte', 'case', 'catch',
+            'char', 'class', 'const', 'continue', 'default', 'do', 'double', 'else',
+            'enum', 'extends', 'final', 'finally', 'float', 'for', 'if', 'implements',
+            'import', 'instanceof', 'int', 'interface', 'long', 'native', 'new',
+            'package', 'private', 'protected', 'public', 'return', 'short', 'static',
+            'strictfp', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws',
+            'transient', 'try', 'void', 'volatile', 'while'
+          ]
+        },
+        'python': { 
+          name: 'python',
+          keywords: [
+            'and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del',
+            'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global',
+            'if', 'import', 'in', 'is', 'lambda', 'None', 'nonlocal', 'not', 'or',
+            'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield',
+            'print', 'range', 'len', 'str', 'int', 'float', 'list', 'dict', 'set',
+            'tuple', 'input', 'open', 'file', 'self', '__init__', 'super'
+          ]
+        }
       };
 
       editorRef.current = CodeMirror.fromTextArea(
@@ -43,8 +99,12 @@ function Editor({ socketRef, roomId, onCodeChange, language }) {
           styleActiveLine: true,
           scrollbarStyle: "overlay",
           tabSize: 2,
+          foldGutter: true,
+          gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
           extraKeys: {
             "Ctrl-Space": "autocomplete",
+            "Ctrl-/": "toggleComment",
+            "Ctrl-Q": function(cm) { cm.foldCode(cm.getCursor()); },
             "Tab": (cm) => {
               if (cm.somethingSelected()) {
                 cm.indentSelection("add");
@@ -54,6 +114,13 @@ function Editor({ socketRef, roomId, onCodeChange, language }) {
             }
           },
           lint: true,
+          hintOptions: {
+            hint: CodeMirror.hint.anyword,
+            completeSingle: false,
+            alignWithWord: true,
+            closeOnUnfocus: true,
+            words: modeMap[language]?.keywords || []
+          }
         }
       );
 
@@ -64,6 +131,15 @@ function Editor({ socketRef, roomId, onCodeChange, language }) {
       editor.getWrapperElement().style.height = "100%";
       editor.getWrapperElement().style.borderRadius = "8px";
       editor.refresh();
+
+      // Setup auto-complete on typing
+      editor.on("inputRead", (cm, change) => {
+        if (!change.text[0].match(/[.`\w]/)) return;
+        const token = cm.getTokenAt(cm.getCursor());
+        if (token.type && token.type.includes("comment")) return;
+        
+        CodeMirror.commands.autocomplete(cm, null, { completeSingle: false });
+      });
 
       editor.on("change", (instance, changes) => {
         const { origin } = changes;
@@ -103,9 +179,14 @@ function Editor({ socketRef, roomId, onCodeChange, language }) {
 
       // Listen for code changes from other users
       socketRef.current.on("code-change", ({ code }) => {
-        if (code !== null) {
+        if (code !== null && code !== editorRef.current.getValue()) {
           editor.setValue(code);
         }
+      });
+
+      // Request initial code state when joining
+      socketRef.current.emit("get-code", {
+        roomId,
       });
 
       // Handle request for current code from new users
@@ -134,8 +215,9 @@ function Editor({ socketRef, roomId, onCodeChange, language }) {
         }
       });
 
-      // Start with an empty editor - it will be populated by sync if there are other users
-      editor.setValue("");
+      // Start with the previous code or empty string
+      const previousCode = editorRef.current ? editorRef.current.getValue() : "";
+      editor.setValue(previousCode || "");
     }
     init();
 
@@ -149,8 +231,15 @@ function Editor({ socketRef, roomId, onCodeChange, language }) {
       Object.values(typingTimeoutRef.current).forEach(timeout => {
         clearTimeout(timeout);
       });
+
+      // Clean up editor instance
+      if (editorRef.current) {
+        const wrapper = editorRef.current.getWrapperElement();
+        wrapper.remove();
+        editorRef.current = null;
+      }
     };
-  }, []);
+  }, [language]); // Added language to dependency array to reinitialize editor when language changes
 
   return (
     <motion.div
