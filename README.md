@@ -1,102 +1,160 @@
-# CodeColab
+# CodeColab 👨‍💻👩‍💻
 
-CodeColab is a real-time code collaboration web application that allows multiple users to collaborate on code in the same virtual room. It's built using the Express.js, React, Node.js, Bootstrap and Socket.IO for real-time communication.
+CodeColab is a real-time collaborative code editor that enables multiple developers to work together on code simultaneously. Built with modern web technologies, it provides a seamless and interactive coding experience with features like real-time synchronization, multi-language support, and live code execution.
 
-## Features
+## ✨ Features
 
-- Create or join a virtual "room" by entering a room ID.
-- Set your username to identify yourself in the room.
-- Real-time code collaboration with other users in the same room.
-- Changes made by one user are instantly reflected on all connected clients.
-- Realtime Tag of whos currently typing in editor.
-- Code highlighting and editor customization options.
+### Real-time Collaboration
+- **Live Code Synchronization**: See changes from all participants in real-time
+- **Cursor Tracking**: View other users' cursor positions and typing indicators
+- **User Presence**: See who's currently active in the room
+- **Activity Notifications**: Get notified when users join/leave or perform actions
 
-## Technologies Used
+### Code Editor
+- **Syntax Highlighting**: Support for multiple programming languages
+- **Auto-completion**: Language-specific keyword suggestions
+- **Code Folding**: Collapse and expand code blocks
+- **Line Numbers**: Clear line reference system
+- **Auto Brackets**: Automatic closing of brackets and quotes
 
-- Express.js: Handling API requests.
-- React: Building the front-end interface.
-- Node.js: Running the server.
-- Socket.IO: Enabling real-time communication.
-- uuid: Generating unique room IDs.
-- CodeMirror: Providing the code editor.
+### Language Support
+- **Python**: Full support with execution
+- **Java**: Syntax highlighting and compilation
+- **C++**: Code editing and compilation support
 
-## Usage
+### Code Execution
+- **Live Output**: See code execution results in real-time
+- **Input Support**: Provide input for programs that require it
+- **Error Handling**: Clear display of compilation and runtime errors
+- **Execution Status**: Visual feedback during code execution
 
-1. Open the CodeColab Application Home Page.
-2. Enter a Room ID or generate a new one.
-3. Set your username.
-4. Start collaborating with others in the same room.
+### User Interface
+- **Modern Design**: Clean, VS Code-inspired dark theme
+- **Responsive Layout**: Works on different screen sizes
+- **Intuitive Controls**: Easy-to-use interface
+- **Toast Notifications**: Informative feedback for all actions
+
+## 🛠️ Technologies Used
+
+### Frontend
+- **React**: UI component library
+- **Socket.IO-client**: Real-time communication
+- **CodeMirror**: Code editor implementation
+- **React Router**: Navigation management
+- **Framer Motion**: Smooth animations
+- **React Hot Toast**: Notification system
+- **Bootstrap**: Responsive styling
+
+### Backend
+- **Node.js**: Runtime environment
+- **Express.js**: Web application framework
+- **Socket.IO**: Real-time event handling
+- **CORS**: Cross-origin resource sharing
+
+### Development
+- **Create React App**: Frontend build setup
+- **dotenv**: Environment configuration
+- **nodemon**: Development server
+- **UUID**: Room ID generation
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/YOUR-USERNAME/CodeColab.git
+```
+
+2. Go to the project directory
+```bash
+cd CodeColab
+```
+
+3. Install frontend dependencies
+```bash
+cd client
+npm install
+```
+
+4. Install backend dependencies
+```bash
+cd ../server
+npm install
+```
+
+### Configuration
+
+1. Create `.env` file in the client directory:
+```env
+REACT_APP_BACKEND_URL=http://localhost:8080
+```
+
+2. Create `.env` file in the server directory:
+```env
+PORT=8080
+CORS_ORIGIN=http://localhost:3000
+```
+
+### Running the Application
+
+1. Start the backend server
+```bash
+cd server
+npm start
+```
+
+2. Start the frontend application
+```bash
+cd client
+npm start
+```
+
+The application will be available at `http://localhost:3000`
+
+## 📝 Usage Guide
+
+1. **Starting a Session**
+   - Open the application in your browser
+   - Generate a new Room ID or enter an existing one
+   - Enter your username
+   - Click "Join Room"
+
+2. **Collaborating**
+   - Share the Room ID with other developers
+   - Write or edit code in the editor
+   - Select the programming language
+   - Add input if required
+   - Click "Run Code" to execute
+
+3. **Features Usage**
+   - Use `Ctrl + Space` for code completion
+   - Use `Ctrl + /` to comment/uncomment lines
+   - Use `Ctrl + Q` to fold/unfold code blocks
+   - Watch real-time cursor positions of other users
+   - Monitor execution status in real-time
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- CodeMirror for the powerful editor component
+- Socket.IO for real-time capabilities
+- The open-source community for inspiration and tools
+
+
+
 
 ## Photos
 
-- Join Room Page
 
-<img width="1280" alt="Screenshot 2025-05-25 at 4 34 24 PM" src="https://github.com/user-attachments/assets/e90ed8b7-66e3-43c9-a065-6eb88374f84f" />
-
-
-
-- Editor Page
-
-<img width="1280" alt="Screenshot 2025-05-25 at 4 35 23 PM" src="https://github.com/user-attachments/assets/b1bf9f5a-0ba3-4c93-b04d-0edcfff34b25" />
-
-
-- Multiple People Collaborating on same code
-
-
-https://github.com/user-attachments/assets/3adda41c-86f3-40c2-9a8a-50103f520be9
-
-
-
-
-## Run Locally
-
-Clone the project
-
-```bash
-  git clone https://github.com/YOUR-USERNAME/CodeColab.git
-```
-
-Go to the project directory
-
-```bash
-  cd CodeColab
-```
-
-Install dependencies
-
-```bash
-  cd client
-  npm install
-```
-
-```bash
-  cd server
-  npm install
-```
-
-Start Application
-
-Backend:
-
-```bash
-  cd server
-  npm start
-```
-
-Frontend:
-
-```bash
-  cd client
-  npm start
-```
-
-# Before Running code a Add a .env File in client Folder and server Folder:
-
-# .env Structure(in Client Folder):
-
-- REACT_APP_BACKEND_URL=http://localhost:{PORT_IN_BELOW_ENV}
-
-# .env Structure (in server Folder)
-
-- PORT=ANY_PORT_NO
-- CORS_ORIGIN=http://localhost:{ANY_NO)
