@@ -64,9 +64,9 @@ const EditorPage = () => {
                 socket.on('code-change', ({ code, username }) => {
                     if (code !== null) {
                         codeRef.current = code;
-                        if (username) {
-                            showUserActivity(username, 'code');
-                        }
+                        // if (username) {
+                        //     showUserActivity(username, 'code');
+                        // }
                     }
                 });
 
