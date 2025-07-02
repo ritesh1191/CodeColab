@@ -36,6 +36,19 @@ CodeColab is a real-time collaborative code editor that enables multiple develop
 - **Intuitive Controls**: Easy-to-use interface
 - **Toast Notifications**: Informative feedback for all actions
 
+
+## 📸 Photo Gallery
+
+### Join Collaboration Room
+<img width="1280" alt="Screenshot 2025-07-02 at 9 56 58 PM" src="https://github.com/user-attachments/assets/a77df475-e25d-475b-92e8-d8463d0d27ae" />
+
+### Editor Page
+<img width="1280" alt="Screenshot 2025-07-02 at 9 59 39 PM" src="https://github.com/user-attachments/assets/0999f1b9-19fd-4cd7-a1d7-3dc6f2fdc93b" />
+
+### Realtime Live Code Collaboration
+https://github.com/user-attachments/assets/fbc59fbf-62b8-4fc4-8ced-505be1321889
+
+
 ## 🛠️ Technologies Used
 
 ### Frontend
